@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car World Car Accessories</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lightbox CSS for image zoom on click -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <style>
+        .header-fixed {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        /* Hide scrollbar for clean look in categories */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header Details Section -->
+    <header class="header-fixed bg-blue-900 text-white shadow-md py-3 px-4 text-center">
+        <h1 class="text-xl sm:text-2xl font-bold tracking-wider">CAR WORLD CAR ACCESSORIES</h1>
+        <p class="text-xs mt-1 text-gray-200">All Vehicles Solution, Parts & Interior/Exterior Accessories Available</p>
+        
+        <!-- Location Below Header Details -->
+        <p class="text-xs mt-1 text-yellow-300 font-medium">📍 Near Maruti Suzuki Agency front, Kargil petrol pump ke bagal mein, Chanp, Siwan</p>
+        
+        <div class="mt-2 text-xs sm:text-sm font-semibold bg-blue-800 py-1 rounded">
+            Prop. Md. Qutbuddin | Contact: 9122480080, 8862973486
+        </div>
+    </header>
+
+    <!-- Attached Scrollable Categories Strip -->
+    <nav class="bg-white shadow-sm border-b overflow-x-auto whitespace-nowrap px-4 py-2 no-scrollbar">
+        <div class="inline-flex gap-2" id="categoryContainer">
+            <button onclick="filterCategory('All')" class="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full shadow">All</button>
+            <button onclick="filterCategory('Seat Cover')" class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-300">Seat Cover</button>
+            <button onclick="filterCategory('Audio & Music')" class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-300">Audio & Music</button>
+            <button onclick="filterCategory('Mats')" class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-300">Mats</button>
+            <button onclick="filterCategory('Body Parts')" class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-300">Body Parts</button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4">
+
+        <!-- Search Bar Section -->
+        <div class="mb-4">
+            <input type="text" id="searchInput" oninput="searchProducts()" placeholder="🔍 Product Name ya Product Number se search karein..." class="w-full p-3 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+
+        <!-- Location and WhatsApp Quick Actions -->
+        <div class="flex justify-between items-center my-4 bg-white p-3 rounded shadow">
+            <a href="https://www.google.com/maps/search/?api=1&query=Car+World+Near+Maruti+Suzuki+Agency+Kargil+Petrol+Pump+Chanp+Siwan" target="_blank" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 hover:bg-red-700 transition">
+                📍 Map Location
+            </a>
+            <a href="https://wa.me/919122480080?text=Hello%20Car%20World,%20Mujhe%20accessories%20chahiye" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition">
+                💬 WhatsApp (9122480080)
+            </a>
+        </div>
+
+        <!-- Admin Control Toggle Button -->
+        <div class="text-right mb-4">
+            <button onclick="toggleAdminPanel()" class="bg-gray-800 text-white px-3 py-1 text-xs rounded">Upload Product</button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden bg-white p-4 rounded shadow mb-6 border border-gray-300">
+            <h3 class="font-bold text-lg mb-2 text-red-600">Admin Product Manager</h3>
+            <div class="space-y-2">
+                <input type="text" id="prodNumber" placeholder="Product Number / Code (e.g., CW-101)" class="w-full p-2 border rounded text-sm">
+                <input type="text" id="prodTitle" placeholder="Product Name" class="w-full p-2 border rounded text-sm">
+                <input type="text" id="prodCategory" placeholder="Category (e.g., Seat Cover, Audio, Mats)" class="w-full p-2 border rounded text-sm">
+                <textarea id="prodDesc" placeholder="Product Description" class="w-full p-2 border rounded text-sm"></textarea>
+                <input type="file" id="prodImageFile" accept="image/*" class="w-full p-2 border rounded text-sm">
+                <button onclick="addNewProduct()" class="w-full bg-blue-600 text-white p-2 rounded text-sm font-bold hover:bg-blue-700 transition">Upload</button>
+            </div>
+        </div>
+
+        <!-- Product Scroll Section -->
+        <section>
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">Available Products & Accessories</h2>
+            <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Dynamic Products will load here -->
+            </div>
+            <div id="loadingStatus" class="text-center py-4 text-gray-500 text-sm">Products load ho rahe hain...</div>
+        </section>
+
+    </main>
+
+    <!-- Lightbox JS for image zooming -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox-plus-jquery.min.js"></script>
+
+    <!-- Firebase SDKs & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Provided Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0PNrzL4IfZzveij_bbquEO68Oqn596H4",
+            authDomain: "car-world-4a541.firebaseapp.com",
+            projectId: "car-world-4a541",
+            storageBucket: "car-world-4a541.firebasestorage.app",
+            messagingSenderId: "382925727794",
+            appId: "1:382925727794:web:2f1bdc6264cd783c2e742b",
+            measurementId: "G-P5D1M28SYD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let lastVisible = null;
+        let currentCategory = 'All';
+        let isLoading = false;
+        let hasMore = true;
+        let allProductsCache = [];
+
+        window.toggleAdminPanel = function() {
+            const panel = document.getElementById('adminPanel');
+            if(panel.classList.contains('hidden')) {
+                const code = prompt("Admin Code dalein (78699):");
+                if(code === "78699") {
+                    panel.classList.remove('hidden');
+                } else if(code !== null) {
+                    alert("Galat Code hai!");
+                }
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        // Image Compression Logic
+        function compressImage(file, quality, maxWidth, maxHeight) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = err => reject(err);
+                };
+            });
+        }
+
+        window.addNewProduct = async function() {
+            const prodNumber = document.getElementById('prodNumber').value.trim();
+            const title = document.getElementById('prodTitle').value.trim();
+            const category = document.getElementById('prodCategory').value.trim() || 'General';
+            const desc = document.getElementById('prodDesc').value.trim();
+            const fileInput = document.getElementById('prodImageFile');
+
+            if(!title || fileInput.files.length === 0) {
+                alert("Kripya Product Name aur Photo zaroor chunein.");
+                return;
+            }
+
+            try {
+                // Compress image before saving to Firestore
+                const compressedDataUrl = await compressImage(fileInput.files[0], 0.7, 800, 800);
+
+                await addDoc(collection(db, "products"), {
+                    productNumber: prodNumber || 'N/A',
+                    title: title,
+                    category: category,
+                    description: desc,
+                    imageUrl: compressedDataUrl,
+                    createdAt: new Date()
+                });
+
+                alert("Product safaltapoorvak Firebase database par upload ho gaya!");
+                location.reload();
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                alert("Upload karne mein samasya aayi.");
+            }
+        }
+
+        async function loadProducts(isInitial = false) {
+            if (isLoading || !hasMore) return;
+            isLoading = true;
+
+            const productListDiv = document.getElementById('productList');
+            const loadingStatus = document.getElementById('loadingStatus');
+            loadingStatus.style.display = 'block';
+
+            if (isInitial) {
+                productListDiv.innerHTML = "";
+                lastVisible = null;
+                hasMore = true;
+                allProductsCache = [];
+            }
+
+            try {
+                let q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(20));
+                
+                if (lastVisible && !isInitial) {
+                    q = query(collection(db, "products"), orderBy("createdAt", "desc"), startAfter(lastVisible), limit(20));
+                }
+
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty && isInitial) {
+                    productListDiv.innerHTML = "<p class='text-gray-500 col-span-2 text-center'>Abhi koi product nahi joda gaya hai.</p>";
+                    loadingStatus.style.display = 'none';
+                    isLoading = false;
+                    return;
+                }
+
+                if (querySnapshot.empty) {
+                    hasMore = false;
+                    loadingStatus.innerText = "Sabhi products load ho chuke hain.";
+                    isLoading = false;
+                    return;
+                }
+
+                lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+                querySnapshot.forEach((docSnap) => {
+                    const prod = docSnap.data();
+                    prod.id = docSnap.id;
+                    allProductsCache.push(prod);
+                });
+
+                renderProducts(allProductsCache);
+                loadingStatus.style.display = 'none';
+            } catch (e) {
+                console.error(e);
+                loadingStatus.innerText = "Products load karne mein error aaya.";
+            }
+            isLoading = false;
+        }
+
+        function renderProducts(products) {
+            const productListDiv = document.getElementById('productList');
+            productListDiv.innerHTML = "";
+
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = products.filter(prod => {
+                const matchesCategory = (currentCategory === 'All' || prod.category === currentCategory);
+                const matchesSearch = searchQuery === '' || 
+                    (prod.title && prod.title.toLowerCase().includes(searchQuery)) || 
+                    (prod.productNumber && prod.productNumber.toLowerCase().includes(searchQuery));
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                productListDiv.innerHTML = "<p class='text-gray-500 col-span-2 text-center'>Koi product nahi mila.</p>";
+                return;
+            }
+
+            filtered.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded shadow flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">${prod.category || 'General'}</span>
+                            <span class="bg-gray-200 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded">No: ${prod.productNumber || 'N/A'}</span>
+                        </div>
+                        <a href="${prod.imageUrl}" data-lightbox="products" data-title="${prod.title} (No: ${prod.productNumber})">
+                            <img src="${prod.imageUrl}" alt="${prod.title}" class="w-full h-48 object-cover rounded mb-2 cursor-pointer hover:opacity-90">
+                        </a>
+                        <h3 class="font-bold text-lg">${prod.title}</h3>
+                        <p class="text-sm text-gray-600 mb-4">${prod.description || ''}</p>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <a href="https://wa.me/919122480080?text=Mujhe%20yeh%20product%20chahiye%20(Product%20No:%20${prod.productNumber}):%20${encodeURIComponent(prod.title)}" target="_blank" class="bg-green-500 text-white px-3 py-1 text-xs rounded font-bold hover:bg-green-600">Order on WhatsApp</a>
+                        <button onclick="deleteProduct('${prod.id}')" class="text-red-500 text-xs underline font-semibold">Delete</button>
+                    </div>
+                `;
+                productListDiv.appendChild(card);
+            });
+        }
+
+        window.filterCategory = function(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('#categoryContainer button').forEach(btn => {
+                if(btn.innerText === cat) {
+                    btn.className = "px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full shadow";
+                } else {
+                    btn.className = "px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-300";
+                }
+            });
+            renderProducts(allProductsCache);
+        }
+
+        window.searchProducts = function() {
+            renderProducts(allProductsCache);
+        }
+
+        window.deleteProduct = async function(id) {
+            const code = prompt("Product delete karne ke liye Admin Code dalein (78699):");
+            if(code === "78699") {
+                if(confirm("Kya aap sach mein ise delete karna chahte hain?")) {
+                    await deleteDoc(doc(db, "products", id));
+                    alert("Product delete ho gaya!");
+                    loadProducts(true);
+                }
+            } else if(code !== null) {
+                alert("Galat code!");
+            }
+        }
+
+        // Infinite Scroll Listener
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                loadProducts(false);
+            }
+        });
+
+        // Initial load
+        loadProducts(true);
+    </script>
+</body>
+</html>
